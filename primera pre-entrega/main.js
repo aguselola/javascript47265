@@ -1,55 +1,72 @@
-alert("Bienvenido a Perla Estetica y Relax! A continuación, ingrese su nombre y el servicio que se va a realizar para que se le asigne un turno...");
-
-const turnos = [];
-
-for (let turno = 10; turno <= 20; turno++) {
-    let nombre = prompt("Ingrese su nombre");
+document.getElementById('asignarTurno').addEventListener('click', function() {
+    const nombre = document.getElementById('nombre').value;
+    const servicio = document.getElementById('servicio').value;
+    const hora = document.getElementById('hora').value;
     
-    while (nombre === "") {
-        alert("Tiene que ingresar un nombre, de lo contrario no podremos asignarle un turno");
-        nombre = prompt("Ingrese su nombre");
-    }
-
-    let servicio = prompt("Ingrese el servicio que se va a querer realizar (masajes, limpieza de cutis, dermaplaning o depilación láser");
-
-    while (servicio !== "masajes" && servicio !== "limpieza de cutis" && servicio !== "dermaplaning" && servicio !== "depilación láser" && servicio !== "depilacion laser") {
-        alert("Tiene que ingresar un servicio válido");
-        servicio = prompt("Ingrese el servicio que se va a querer realizar (masajes, limpieza de cutis, dermaplaning o depilación láser");
-    }
-    const turnoInfo = {
-        nombre: nombre,
-        servicio: servicio,
-    };
     
-    if (turno <= 12) {
-        turnoInfo.turno = `${turno}am`;
+    if (parseInt(hora) <= 20) {
+        const turnoTexto = `${nombre} - Servicio: ${servicio} - Hora: ${hora}:00`;
+
+        const nuevoP = document.createElement('p');
+        nuevoP.textContent = turnoTexto;
+        document.getElementById('turnosAsignados').appendChild(nuevoP);
+
+        const horaSelect = document.getElementById('hora');
+        const horaValue = horaSelect.value;
+        
+        let optionToRemove = null;
+        
+        for (let i = 0; i < horaSelect.options.length; i++) {
+            if (parseInt(horaSelect.options[i].value) === parseInt(horaValue)) {
+                optionToRemove = horaSelect.options[i];
+                break;
+            }
+        }
+        
+        if (optionToRemove) {
+            horaSelect.removeChild(optionToRemove);
+        }
+
+        nombre.value = '';
+        
+        let turnos = JSON.parse(localStorage.getItem("turnos")) || [];
+            
+        turnos.push(turnoTexto);
+        
+        localStorage.setItem("turnos", JSON.stringify(turnos));
+        
     } else {
-        turnoInfo.turno = `${turno}pm`;
+        alert("No se pueden asignar turnos después de las 20:00 hrs.");
     }
-    
-    turnos.push(turnoInfo);
+});
 
-    alert(`Turno ${turnoInfo.turno} Nombre: ${turnoInfo.nombre} para el servicio de ${turnoInfo.servicio}`);
+// Función para realizar la búsqueda de turnos en el localStorage
+function buscarTurnos() {
+    const buscarInput = document.getElementById('buscarInput');
+    const resultadosBusqueda = document.getElementById('resultadosBusqueda');
 
-};
+    const nombreABuscar = buscarInput.value.trim();
+    if (nombreABuscar === "") {
+        resultadosBusqueda.textContent = "Ingrese un nombre para buscar.";
+        return;
+    }
 
-alert("Desafortunadamente nos hemos quedado sin turnos para el día de hoy. ¡Lo esperamos mañana! Que tenga un lindo día :)");
+    let turnos = JSON.parse(localStorage.getItem("turnos")) || [];
 
+    const resultados = turnos.filter(turno => turno.includes(nombreABuscar));
 
-//Busqueda por nombre dentro de los turnos
-function buscarPorNombre(nombre) {
-    return turnos.filter(turno => turno.nombre === nombre);
-};
-
-const nombreBuscado = prompt("Ingrese el nombre que desea buscar:");
-const resultadosPorNombre = buscarPorNombre(nombreBuscado);
-
-if (resultadosPorNombre.length > 0) {
-    alert("Resultados encontrados por nombre:");
-        resultadosPorNombre.forEach(turno => {
-            alert(`Turno ${turno.turno} Nombre: ${turno.nombre} para el servicio de ${turno.servicio}`);
+    if (resultados.length > 0) {
+        const listaResultados = document.createElement('ul');
+        resultados.forEach(resultado => {
+            const item = document.createElement('li');
+            item.textContent = resultado;
+            listaResultados.appendChild(item);
         });
-} else {
-    alert("No se encontraron resultados para el nombre ingresado.");
-};
+        resultadosBusqueda.innerHTML = "";
+        resultadosBusqueda.appendChild(listaResultados);
+    } else {
+        resultadosBusqueda.textContent = "No se encontraron resultados.";
+    }
+}
 
+document.getElementById('buscarTurno').addEventListener('click', buscarTurnos);
